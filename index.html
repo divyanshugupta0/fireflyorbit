@@ -14,8 +14,9 @@
     body {
       font-family: Arial, sans-serif;
       overflow: hidden; /* Prevent scrolling */
-      background-color: #1a1a1a; /* Default dark background color */
+      background-image: url(wall3.jpg); /* Default dark background color */
       background-size: cover; /* Ensure the background fits the screen */
+      color: white; /* Default text color */
     }
 
     .taskbar {
@@ -23,7 +24,7 @@
       bottom: 0;
       width: 100%;
       height: 50px;
-      background: rgba(105, 105, 105, 0.8); /* Dark grey taskbar with opacity */
+      background: rgba(238, 238, 238, 0.099); /* Dark grey taskbar with opacity */
       backdrop-filter: blur(10px); /* Backdrop blur effect */
       display: flex;
       align-items: center;
@@ -152,7 +153,8 @@
       position: fixed;
       z-index: 10000;
       display: none;
-      background-color: #0000006b;
+      background-color: rgba(238, 238, 238, 0.099);
+      backdrop-filter: blur(10px);
       border: 1px solid #ccc;
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
       padding: 5px 0;
@@ -190,7 +192,8 @@
     }
 
     .modal-content {
-      background-color: #fefefe;
+      background-color: rgba(238, 238, 238, 0.099);
+      backdrop-filter: blur(25px);
       margin: 10% auto;
       padding: 20px;
       border: 1px solid #888;
@@ -242,6 +245,56 @@
       background-color: #f44336; /* Red */
       color: white;
     }
+
+
+
+
+
+
+
+
+
+
+
+    /*starting pop-up................................................*/
+    .welcome-modal {
+      display: none;
+      position: fixed;
+      z-index: 10000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.5);
+    }
+    
+    .welcome-modal-content {
+      background-color: rgba(238, 238, 238, 0.099);
+      backdrop-filter: blur(25px);
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 400px;
+      text-align: center;
+    }
+    
+    .welcome-modal-footer {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    
+    .welcome-modal-footer .ok-btn {
+      background-color: #4caf50; /* Green */
+      color: white;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      cursor: pointer;
+    }
+    
   </style>
 </head>
 <body>
@@ -271,11 +324,11 @@
         <img src="instagram.png" alt="Icon 6"><br>
         <span>Sparked Instagram</span>
       </div>
-      <div class="icon" onclick="openSite('https://www.facebook.com', 'Sparked Facebook', 'facebook.png')">
+      <div class="icon" onclick="openSite('https://www.chat.openai.com', 'Sparked Facebook', 'facebook.png')">
         <img src="facebook.png" alt="Icon 7"><br>
         <span>Sparked Facebook</span>
       </div>
-      <div class="icon" onclick="openSite('https://divyanshugupta0.github.io/fireflygroove', 'FireFly Groove', 'cd.png')">
+      <div class="icon" onclick="openSite('https://divyanshugupta0.github.io/fireflygroove ', 'FireFly Groove', 'cd.png')">
         <img src="cd.png" alt="Icon 7"><br>
         <span>FireFly Groove</span>
       </div>
@@ -290,11 +343,18 @@
 
   <div id="contextMenu" class="context-menu">
     <ul>
-      <li id="open" style="display: none;">Open</li>
-      <li id="reload">Refresh</li>
-      <li id="share">Share</li>
-      <li id="changeBackground">Change Background</li>
-      <li id="terminal">Terminal</li>
+      <li id="open" style="display: none;"><svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        width="19" height="16"
+        fill="currentColor"
+    >
+        <path d="M10 4H2v16h20V6H12l-2-2zm10 4v10H4V8h2.5L9 10h6l1.5-2H20z"/>
+    </svg>  Open</li>
+      <li id="reload">⟳   Refresh</li>
+      <li id="share">🔗 Share</li>
+      <li id="changeBackground"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" class="icon-md-heavy"><path fill="currentColor" fill-rule="evenodd" d="M7 5a3 3 0 0 1 3-3h9a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3h-2v2a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3v-9a3 3 0 0 1 3-3h2zm2 2h5a3 3 0 0 1 3 3v5h2a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1h-9a1 1 0 0 0-1 1zM5 9a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-9a1 1 0 0 0-1-1z" clip-rule="evenodd"></path></svg>  Change Background</li>
+      <li id="terminal">>_ Terminal</li>
     </ul>
   </div>
 
@@ -312,6 +372,22 @@
       </div>
     </div>
   </div>
+
+
+
+
+
+
+  <div id="welcomeModal" class="welcome-modal">
+    <div class="welcome-modal-content">
+      <h2>Welcome to FireFly India!</h2>
+      <div class="welcome-modal-footer">
+        <button class="ok-btn" onclick="closeWelcomeModal()">Okay</button>
+      </div>
+    </div>
+  </div>
+  
+  
 
   <script>
     const contextMenu = document.getElementById('contextMenu');
@@ -376,12 +452,12 @@
 
       const fullscreenButton = document.createElement('button');
       fullscreenButton.className = 'control-button fullscreen';
-      fullscreenButton.textContent = '[ ]';
+      fullscreenButton.textContent = '⤢';
       fullscreenButton.onclick = () => toggleFullscreen(iframe);
 
       const closeButton = document.createElement('button');
       closeButton.className = 'control-button';
-      closeButton.textContent = 'x';
+      closeButton.textContent = 'X';
       closeButton.onclick = () => iframeContainer.remove();
 
       controls.appendChild(minimizeButton);
@@ -460,11 +536,55 @@
       }
       selectedWallpaper = img;
       img.style.border = '2px solid #4caf50';
+      // Call function to set text color based on background image
+      setTextColorFromBackground();
+    }
+
+    function setTextColorFromBackground() {
+      const backgroundImageUrl = `url(${selectedWallpaper.src})`;
+      const tempImg = new Image();
+      tempImg.src = selectedWallpaper.src;
+      tempImg.onload = function() {
+        const averageColor = getAverageColor(tempImg);
+        const isDark = isDarkColor(averageColor);
+        document.body.style.color = isDark ? 'white' : 'black';
+      };
+    }
+
+    function getAverageColor(img) {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+
+      let sumR = 0, sumG = 0, sumB = 0;
+      for (let i = 0; i < imageData.length; i += 4) {
+        sumR += imageData[i];
+        sumG += imageData[i + 1];
+        sumB += imageData[i + 2];
+      }
+
+      const pixelCount = imageData.length / 4;
+      const avgR = Math.floor(sumR / pixelCount);
+      const avgG = Math.floor(sumG / pixelCount);
+      const avgB = Math.floor(sumB / pixelCount);
+
+      return `rgb(${avgR}, ${avgG}, ${avgB})`;
+    }
+
+    function isDarkColor(color) {
+      const rgb = color.match(/\d+/g);
+      // HSP (Highly Sensitive Poo) equation from http://alienryderflex.com/hsp.html
+      const brightness = Math.sqrt(0.299 * (rgb[0] * rgb[0]) + 0.587 * (rgb[1] * rgb[1]) + 0.114 * (rgb[2] * rgb[2]));
+      return brightness < 127.5;
     }
 
     function applyWallpaper() {
       if (selectedWallpaper) {
         document.body.style.backgroundImage = `url(${selectedWallpaper.src})`;
+        setTextColorFromBackground();
         closeWallpaperModal();
       }
     }
@@ -504,7 +624,72 @@
     };
 
     document.getElementById('terminal').onclick = function () {
-      openSite('https://your-terminal-url.com', 'Terminal', 'terminal-icon.png');
+      openSite('https://your-terminal-url.com', 'Terminal', 'terminal.png');
+    };  
+
+
+
+
+
+
+    //starting pop-up..................................................
+    let isFullscreen = false;
+
+    function closeWelcomeModal() {
+      const modal = document.getElementById('welcomeModal');
+      if (modal) {
+        modal.style.display = 'none';
+        openFullscreen();
+      }
+    }
+
+    function openFullscreen() {
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen().catch(err => console.error("Fullscreen request failed:", err));
+      } else if (elem.mozRequestFullScreen) {
+        elem.mozRequestFullScreen();
+      } else if (elem.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen();
+      } else if (elem.msRequestFullscreen) {
+        elem.msRequestFullscreen();
+      }
+      isFullscreen = true;
+    }
+
+    function exitFullscreen() {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(err => console.error("Exit fullscreen failed:", err));
+      } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+      isFullscreen = false;
+    }
+
+    function checkFullscreenStatus() {
+      if (!document.fullscreenElement) {
+        isFullscreen = false;
+      }
+    }
+
+    document.addEventListener('fullscreenchange', checkFullscreenStatus);
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && isFullscreen) {
+        exitFullscreen();
+      }
+    });
+
+    window.onload = function() {
+      console.log("Window loaded");
+      const modal = document.getElementById('welcomeModal');
+      if (modal) {
+        modal.style.display = 'block';
+      }
     };
 
   </script>
