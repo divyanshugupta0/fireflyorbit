@@ -31,7 +31,12 @@
       justify-content: center; /* Align icons in the X-direction */
       padding: 0 20px;
     }
-
+    .taskbar .minimized-icon{
+      transition: transform 0.2s ease, box-shadow 0.3s ease;
+    }
+    .taskbar .minimized-icon:hover{
+      transform: scale(1.5);
+    }
     .desktop {
       position: absolute;
       top: 0;
@@ -120,6 +125,39 @@
       height: 30px;
     }
 
+
+
+
+
+
+    .iframe-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  z-index: 1000;
+  background: #fff;
+  transition: all 0.3s ease;
+}
+
+.iframe-container.half {
+  width: 50%;
+}
+
+.iframe-container.half-left {
+  left: 0;
+}
+
+.iframe-container.half-right {
+  left: 50%;
+}
+
+
+
+
+
+
     .header {
       position: absolute;
       top: 0;
@@ -133,17 +171,17 @@
       padding: 0 10px;
       z-index: 1001;
     }
-
+    
     .header .title {
       flex-grow: 1;
       margin-left: 10px;
     }
-
+    
     .header .controls {
       display: flex;
       gap: 5px;
     }
-
+    
     .header .controls .control-button {
       padding: 2px 8px;
     }
@@ -294,6 +332,58 @@
       border: none;
       cursor: pointer;
     }
+
+
+
+
+
+
+
+
+    /*styles for the no-internet popup */
+    .no-internet-modal {
+      display: none;
+      position: fixed;
+      z-index: 10000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .no-internet-modal-content {
+      background-color: rgba(238, 238, 238, 0.099);
+      backdrop-filter: blur(25px);
+      display: inline-block;
+      margin-top: 20%;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 400px;
+    }
+
+    .no-internet-modal-content h2 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .no-internet-modal-content p {
+      margin: 20px 0;
+    }
+
+    .no-internet-modal-content button {
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 16px;
+      border-radius: 5px;
+    }
     
   </style>
 </head>
@@ -320,9 +410,9 @@
         <img src="youtube.png" alt="Icon 5"><br>
         <span>Sparked Youtube</span>
       </div>
-      <div class="icon" onclick="openSite('https://www.instagram.com/accounts/login/?hl=en', 'Sparked Instagram', 'instagram.png')">
-        <img src="instagram.png" alt="Icon 6"><br>
-        <span>Sparked Instagram</span>
+      <div class="icon" onclick="openSite('https://www.google.com/search?igu=1', 'Sparked Instagram', 'google.png')">
+        <img src="google.png" alt="Icon 6"><br>
+        <span>Sparked Google</span>
       </div>
       <div class="icon" onclick="openSite('https://www.chat.openai.com', 'Sparked Facebook', 'facebook.png')">
         <img src="facebook.png" alt="Icon 7"><br>
@@ -375,6 +465,17 @@
 
 
 
+
+
+  <!-- Existing network check content here -->
+  
+  <div id="noInternetModal" class="no-internet-modal">
+    <div class="no-internet-modal-content">
+      <h2>No Internet Connection</h2>
+      <p>Please check your connection.</p>
+      <button onclick="closeNoInternetModal()">Close</button>
+    </div>
+  </div>
 
 
 
@@ -432,49 +533,110 @@
     }
 
     function openSite(url, title, iconSrc) {
+      // Check for existing iframes
+      const existingIframes = document.querySelectorAll('.iframe-container');
+      const numIframes = existingIframes.length;
+      const isAnyHalf = Array.from(existingIframes).some(iframe => iframe.classList.contains('half'));
+    
+      // Determine the initial state for the new iframe
+      const initialState = isAnyHalf ? 'half' : 'fullscreen';
+    
+      // Create new iframe container
       const iframeContainer = document.createElement('div');
-      iframeContainer.className = 'iframe-container';
-
+      iframeContainer.className = `iframe-container ${initialState}`;
+    
+      // Create header
       const header = document.createElement('div');
       header.className = 'header';
-
+    
       const titleElem = document.createElement('span');
       titleElem.className = 'title';
       titleElem.textContent = title;
-
+    
       const controls = document.createElement('div');
       controls.className = 'controls';
-
+    
+      // Minimize button
       const minimizeButton = document.createElement('button');
       minimizeButton.className = 'control-button minimize';
       minimizeButton.textContent = '-';
       minimizeButton.onclick = () => minimizeIframe(iframeContainer, title, iconSrc);
-
-      const fullscreenButton = document.createElement('button');
-      fullscreenButton.className = 'control-button fullscreen';
-      fullscreenButton.textContent = '⤢';
-      fullscreenButton.onclick = () => toggleFullscreen(iframe);
-
+    
+      // Resize button
+      const resizeButton = document.createElement('button');
+      resizeButton.className = 'control-button';
+      resizeButton.textContent = '↔';
+      resizeButton.onclick = () => resizeIframe(iframeContainer);
+    
+      // Close button
       const closeButton = document.createElement('button');
       closeButton.className = 'control-button';
       closeButton.textContent = 'X';
       closeButton.onclick = () => iframeContainer.remove();
-
+    
       controls.appendChild(minimizeButton);
-      controls.appendChild(fullscreenButton);
+      controls.appendChild(resizeButton);
       controls.appendChild(closeButton);
-
+    
       header.appendChild(titleElem);
       header.appendChild(controls);
-
+    
+      // Create iframe
       const iframe = document.createElement('iframe');
       iframe.src = url;
       iframe.className = 'fullscreen-iframe';
-
+    
       iframeContainer.appendChild(header);
       iframeContainer.appendChild(iframe);
       document.body.appendChild(iframeContainer);
+    
+      // Bring newly opened iframe to the top
+      iframeContainer.addEventListener('click', () => {
+        bringToFront(iframeContainer);
+      });
+    
+      // Ensure the new iframe starts in the correct state
+      if (initialState === 'fullscreen') {
+        setTimeout(() => {
+          iframeContainer.style.width = '100%';
+          iframeContainer.style.left = '0';
+          iframeContainer.style.zIndex = '1001'; // Bring it to front
+        }, 0);
+      } else {
+        // Position the new iframe correctly if starting as half
+        setTimeout(() => {
+          iframeContainer.style.width = '50%';
+          iframeContainer.style.left = numIframes % 2 === 0 ? '0' : '50%';
+          iframeContainer.style.zIndex = '1000'; // Normal z-index for half mode
+        }, 0);
+      }
     }
+    
+    function resizeIframe(iframeContainer) {
+      const isFullscreen = iframeContainer.classList.contains('fullscreen');
+      const numIframes = document.querySelectorAll('.iframe-container').length;
+    
+      if (isFullscreen) {
+        iframeContainer.classList.remove('fullscreen');
+        iframeContainer.classList.add('half');
+        iframeContainer.style.width = '50%';
+        iframeContainer.style.left = numIframes % 2 === 0 ? '0' : '50%';
+        iframeContainer.style.zIndex = '1000'; // Normal z-index for half mode
+      } else {
+        iframeContainer.classList.remove('half');
+        iframeContainer.classList.add('fullscreen');
+        iframeContainer.style.width = '100%';
+        iframeContainer.style.left = '0';
+        iframeContainer.style.zIndex = '1001'; // Bring it to front
+      }
+    }
+    
+    function bringToFront(iframeContainer) {
+      // Move the clicked iframe to the top of the stack
+      iframeContainer.style.zIndex = '1001';
+    }
+    
+    
 
     function minimizeIframe(iframeContainer, title, iconSrc) {
       iframeContainer.style.display = 'none';
@@ -511,6 +673,9 @@
       'wall4.jpg',
       'wall5.jpg',
       'wall6.jpg',
+      'wall7.jpg',
+      'wall8.jpg',
+      'wall9.jpg',
       'wallco.jpg'
     ];
 
@@ -588,6 +753,81 @@
         closeWallpaperModal();
       }
     }
+
+    //for welcome modal to show once
+    function showWelcomeModal() {
+      const welcomeModal = document.getElementById('welcomeModal');
+      welcomeModal.style.display = 'block';
+    
+      // Set the flag in localStorage
+      localStorage.setItem('welcomeShown', 'true');
+    }
+
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const welcomeShown = localStorage.getItem('welcomeShown');
+    
+      if (!welcomeShown) {
+        showWelcomeModal();
+      } else {
+        // Request fullscreen mode
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen();
+        } else if (document.documentElement.mozRequestFullScreen) { // Firefox
+          document.documentElement.mozRequestFullScreen();
+        } else if (document.documentElement.webkitRequestFullscreen) { // Chrome, Safari and Opera
+          document.documentElement.webkitRequestFullscreen();
+        } else if (document.documentElement.msRequestFullscreen) { // IE/Edge
+          document.documentElement.msRequestFullscreen();
+        }
+      }
+    
+      // Load the saved wallpaper from localStorage
+      const savedWallpaper = localStorage.getItem('wallpaper');
+      if (savedWallpaper) {
+        document.body.style.backgroundImage = `url(${savedWallpaper})`;
+        setTextColorFromBackground(savedWallpaper);
+      }
+    
+      // Move icons to center of taskbar
+      const minimizedIconsContainer = document.getElementById('minimizedIcons');
+      const taskbar = document.querySelector('.taskbar');
+      taskbar.insertBefore(minimizedIconsContainer, taskbar.firstChild);
+    
+      // Update to tile icons horizontally without names
+      const minimizedIcons = document.querySelectorAll('.minimized-icon');
+      minimizedIcons.forEach(icon => {
+        icon.querySelector('span')?.remove(); // Remove the name below the icons if present
+      });
+    });
+    
+    
+
+
+    function applyWallpaper() {
+      if (selectedWallpaper) {
+        const wallpaperUrl = selectedWallpaper.src;
+        document.body.style.backgroundImage = `url(${wallpaperUrl})`;
+        setTextColorFromBackground(wallpaperUrl);
+    
+        // Save the selected wallpaper to localStorage
+        localStorage.setItem('wallpaper', wallpaperUrl);
+    
+        closeWallpaperModal();
+      }
+    }
+    
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Load the saved wallpaper from localStorage
+      const savedWallpaper = localStorage.getItem('wallpaper');
+      if (savedWallpaper) {
+        document.body.style.backgroundImage = `url(${savedWallpaper})`;
+        setTextColorFromBackground(savedWallpaper);
+      }
+    });
 
     // Move icons to center of taskbar
     document.addEventListener('DOMContentLoaded', () => {
@@ -692,6 +932,28 @@
       }
     };
 
+
+
+
+
+
+    // Function to check internet connectivity
+    function checkInternetConnection() {
+      if (navigator.onLine) {
+        document.getElementById('noInternetModal').style.display = 'none';
+      } else {
+        document.getElementById('noInternetModal').style.display = 'block';
+      }
+    }
+
+    // Set interval to check the internet connection every second
+    setInterval(checkInternetConnection, 1000);
+
+    function closeNoInternetModal() {
+      document.getElementById('noInternetModal').style.display = 'none';
+    }
+
+    
   </script>
 </body>
 </html>
