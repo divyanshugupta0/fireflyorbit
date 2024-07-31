@@ -1,987 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FireFly India</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: Arial, sans-serif;
-      overflow: hidden; /* Prevent scrolling */
-      background-image: url(wall3.jpg); /* Default dark background color */
-      background-size: cover; /* Ensure the background fits the screen */
-      color: white; /* Default text color */
-    }
-
-    .taskbar {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      height: 50px;
-      background: rgba(238, 238, 238, 0.099); /* Dark grey taskbar with opacity */
-      backdrop-filter: blur(10px); /* Backdrop blur effect */
-      display: flex;
-      align-items: center;
-      justify-content: center; /* Align icons in the X-direction */
-      padding: 0 20px;
-    }
-    .taskbar .minimized-icon{
-      transition: transform 0.2s ease, box-shadow 0.3s ease;
-    }
-    .taskbar .minimized-icon:hover{
-      transform: scale(1.5);
-    }
-    .desktop {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 50px; /* Adjusted for taskbar height */
-      overflow: hidden;
-      padding: 20px;
-    }
-
-    .desktop-icons {
-      display: flex;
-      flex-direction: column; /* Change to vertical layout */
-      align-items: flex-start; /* Align icons to the left */
-    }
-
-    .icon {
-      text-align: center;
-      margin: 10px 0; /* Adjusted margin */
-      cursor: pointer;
-      width: 10%; /* Ensure icons occupy full width */
-    }
-
-    .icon img {
-      width: 50px;
-      height: 50px;
-      margin-bottom: 5px;
-    }
-
-    .iframe-container {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 1000;
-      background: #fff;
-    }
-
-    .fullscreen-iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-
-    .window-controls {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      display: flex;
-      gap: 5px;
-      z-index: 1001;
-    }
-
-    .control-button {
-      background-color: #f44336; /* Red */
-      color: white;
-      border: none;
-      padding: 5px 10px;
-      cursor: pointer;
-      font-size: 16px;
-      border-radius: 5px;
-    }
-
-    .control-button.minimize {
-      background-color: #ffeb3b; /* Yellow */
-    }
-
-    .control-button.fullscreen {
-      background-color: #4caf50; /* Green */
-    }
-
-    .minimized-icons {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .minimized-icon {
-      text-align: center;
-      cursor: pointer;
-    }
-
-    .minimized-icon img {
-      width: 30px;
-      height: 30px;
-    }
-
-
-
-
-
-
-    .iframe-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 50%;
-  height: 100%;
-  z-index: 1000;
-  background: #fff;
-  transition: all 0.3s ease;
-}
-
-.iframe-container.half {
-  width: 50%;
-}
-
-.iframe-container.half-left {
-  left: 0;
-}
-
-.iframe-container.half-right {
-  left: 50%;
-}
-
-
-
-
-
-
-    .header {
-      position: absolute;
-      top: 0;
-      width: 100%;
-      height: 30px;
-      background-color: #333;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 10px;
-      z-index: 1001;
-    }
-    
-    .header .title {
-      flex-grow: 1;
-      margin-left: 10px;
-    }
-    
-    .header .controls {
-      display: flex;
-      gap: 5px;
-    }
-    
-    .header .controls .control-button {
-      padding: 2px 8px;
-    }
-
-    .context-menu {
-      border-radius: 8%;
-      position: fixed;
-      z-index: 10000;
-      display: none;
-      background-color: rgba(238, 238, 238, 0.099);
-      backdrop-filter: blur(10px);
-      border: 1px solid #ccc;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      padding: 5px 0;
-    }
-
-    .context-menu ul {
-      list-style-type: none;
-      margin: 0;
-      padding: 0;
-    }
-
-    .context-menu ul li {
-      padding: 8px 15px;
-      cursor: pointer;
-    }
-
-    .context-menu ul li:hover {
-      background-color: #f0f0f057;
-    }
-
-    .context-menu.show {
-      display: block;
-    }
-
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 10000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      background-color: rgba(0,0,0,0.5);
-    }
-
-    .modal-content {
-      background-color: rgba(238, 238, 238, 0.099);
-      backdrop-filter: blur(25px);
-      margin: 10% auto;
-      padding: 20px;
-      border: 1px solid #888;
-      width: 80%;
-      max-width: 600px;
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .modal-header h2 {
-      margin: 0;
-    }
-
-    .modal-body {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-      gap: 10px;
-    }
-
-    .modal-body img {
-      width: 100%;
-      cursor: pointer;
-    }
-
-    .modal-footer {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 20px;
-    }
-
-    .modal-footer button {
-      margin-left: 10px;
-      padding: 10px 20px;
-      border: none;
-      cursor: pointer;
-      font-size: 16px;
-    }
-
-    .modal-footer .ok-btn {
-      background-color: #4caf50; /* Green */
-      color: white;
-    }
-
-    .modal-footer .cancel-btn {
-      background-color: #f44336; /* Red */
-      color: white;
-    }
-
-
-
-
-
-
-
-
-
-
-
-    /*starting pop-up................................................*/
-    .welcome-modal {
-      display: none;
-      position: fixed;
-      z-index: 10000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      background-color: rgba(0,0,0,0.5);
-    }
-    
-    .welcome-modal-content {
-      background-color: rgba(238, 238, 238, 0.099);
-      backdrop-filter: blur(25px);
-      margin: 15% auto;
-      padding: 20px;
-      border: 1px solid #888;
-      width: 80%;
-      max-width: 400px;
-      text-align: center;
-    }
-    
-    .welcome-modal-footer {
-      display: flex;
-      justify-content: center;
-      margin-top: 20px;
-    }
-    
-    .welcome-modal-footer .ok-btn {
-      background-color: #4caf50; /* Green */
-      color: white;
-      padding: 10px 20px;
-      font-size: 16px;
-      border: none;
-      cursor: pointer;
-    }
-
-
-
-
-
-
-
-
-    /*styles for the no-internet popup */
-    .no-internet-modal {
-      display: none;
-      position: fixed;
-      z-index: 10000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0,0,0,0.5);
-      color: white;
-      text-align: center;
-      padding: 20px;
-    }
-
-    .no-internet-modal-content {
-      background-color: rgba(238, 238, 238, 0.099);
-      backdrop-filter: blur(25px);
-      display: inline-block;
-      margin-top: 20%;
-      padding: 20px;
-      border: 1px solid #888;
-      width: 80%;
-      max-width: 400px;
-    }
-
-    .no-internet-modal-content h2 {
-      margin: 0;
-      font-size: 24px;
-    }
-
-    .no-internet-modal-content p {
-      margin: 20px 0;
-    }
-
-    .no-internet-modal-content button {
-      background-color: #4caf50;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      cursor: pointer;
-      font-size: 16px;
-      border-radius: 5px;
-    }
-    
-  </style>
-</head>
-<body>
-  <div class="desktop" id="desktop">
-    <div class="desktop-icons">
-      <div class="icon" onclick="openSite('https://divyanshugupta0.github.io/fireflystudyspark', 'FireFly Spark', 'hot-deal.png')">
-        <img src="hot-deal.png" alt="Icon 1"><br>
-        <span>FireFly Spark</span>
-      </div>
-      <div class="icon" onclick="openSite('https://fireflyindia.000webhostapp.com', 'Portfolio', 'portfolio.png')">
-        <img src="portfolio.png" alt="Icon 2"><br>
-        <span>Portfolio</span>
-      </div>
-      <div class="icon" onclick="openSite('https://divyanshugupta0.github.io/FireCalc', 'Fire calc', 'money.png')">
-        <img src="money.png" alt="Icon 3"><br>
-        <span>Fire calc</span>
-      </div>
-      <div class="icon" onclick="openSite('https://divyanshugupta0.github.io/fireflycompiler', 'FireFly Compiler', 'programming.png')">
-        <img src="programming.png" alt="Icon 4"><br>
-        <span>FireFly Compiler</span>
-      </div>
-      <div class="icon" onclick="openSite('https://www.google.com/search?igu=1', 'Sparked Youtube', 'youtube.png')">
-        <img src="youtube.png" alt="Icon 5"><br>
-        <span>Sparked Youtube</span>
-      </div>
-      <div class="icon" onclick="openSite('https://www.google.com/search?igu=1', 'Sparked Instagram', 'google.png')">
-        <img src="google.png" alt="Icon 6"><br>
-        <span>Sparked Google</span>
-      </div>
-      <div class="icon" onclick="openSite('https://www.chat.openai.com', 'Sparked Facebook', 'facebook.png')">
-        <img src="facebook.png" alt="Icon 7"><br>
-        <span>Sparked Facebook</span>
-      </div>
-      <div class="icon" onclick="openSite('https://divyanshugupta0.github.io/fireflygroove ', 'FireFly Groove', 'cd.png')">
-        <img src="cd.png" alt="Icon 7"><br>
-        <span>FireFly Groove</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="taskbar">
-    <div class="minimized-icons" id="minimizedIcons">
-      <!-- Minimized iframes will appear here -->
-    </div>
-  </div>
-
-  <div id="contextMenu" class="context-menu">
-    <ul>
-      <li id="open" style="display: none;"><svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        width="19" height="16"
-        fill="currentColor"
-    >
-        <path d="M10 4H2v16h20V6H12l-2-2zm10 4v10H4V8h2.5L9 10h6l1.5-2H20z"/>
-    </svg>  Open</li>
-      <li id="reload">⟳   Refresh</li>
-      <li id="share">🔗 Share</li>
-      <li id="changeBackground"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" class="icon-md-heavy"><path fill="currentColor" fill-rule="evenodd" d="M7 5a3 3 0 0 1 3-3h9a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3h-2v2a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3v-9a3 3 0 0 1 3-3h2zm2 2h5a3 3 0 0 1 3 3v5h2a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1h-9a1 1 0 0 0-1 1zM5 9a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-9a1 1 0 0 0-1-1z" clip-rule="evenodd"></path></svg>  Change Background</li>
-      <li id="terminal">>_ Terminal</li>
-    </ul>
-  </div>
-
-  <div id="wallpaperModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Select a Wallpaper</h2>
-      </div>
-      <div class="modal-body" id="wallpaperGrid">
-        <!-- Wallpapers will be dynamically added here -->
-      </div>
-      <div class="modal-footer">
-        <button class="ok-btn" onclick="applyWallpaper()">Apply</button>
-        <button class="cancel-btn" onclick="closeWallpaperModal()">Cancel</button>
-      </div>
-    </div>
-  </div>
-
-
-
-
-
-  <!-- Existing network check content here -->
-  
-  <div id="noInternetModal" class="no-internet-modal">
-    <div class="no-internet-modal-content">
-      <h2>No Internet Connection</h2>
-      <p>Please check your connection.</p>
-      <button onclick="closeNoInternetModal()">Close</button>
-    </div>
-  </div>
-
-
-
-  <div id="welcomeModal" class="welcome-modal">
-    <div class="welcome-modal-content">
-      <h2>Welcome to FireFly India!</h2>
-      <div class="welcome-modal-footer">
-        <button class="ok-btn" onclick="closeWelcomeModal()">Okay</button>
-      </div>
-    </div>
-  </div>
-  
-  
-
-  <script>
-    const contextMenu = document.getElementById('contextMenu');
-    let desktopIcons = document.querySelectorAll('.icon');
-    let wallpaperModal = document.getElementById('wallpaperModal');
-    let selectedWallpaper = null;
-
-    document.addEventListener('click', (e) => {
-      contextMenu.classList.remove('show');
-    });
-
-    document.addEventListener('contextmenu', (e) => {
-      e.preventDefault();
-      const targetElement = e.target;
-      if (targetElement.classList.contains('icon') || targetElement.closest('.icon')) {
-        const iconElement = targetElement.classList.contains('icon') ? targetElement : targetElement.closest('.icon');
-        showContextMenu(e.pageX, e.pageY, iconElement);
-      } else {
-        showContextMenu(e.pageX, e.pageY);
-      }
-    });
-
-    function showContextMenu(x, y, iconElement) {
-      contextMenu.style.left = `${x}px`;
-      contextMenu.style.top = `${y}px`;
-      contextMenu.classList.add('show');
-
-      const openMenuItem = document.getElementById('open');
-      if (iconElement) {
-        openMenuItem.style.display = 'block';
-        openMenuItem.onclick = () => openIcon(iconElement);
-      } else {
-        openMenuItem.style.display = 'none';
-      }
-    }
-
-    function openIcon(iconElement) {
-      const onClick = iconElement.getAttribute('onclick');
-      if (onClick) {
-        eval(onClick);
-      }
-    }
-
-    function openSite(url, title, iconSrc) {
-      // Check for existing iframes
-      const existingIframes = document.querySelectorAll('.iframe-container');
-      const numIframes = existingIframes.length;
-      const isAnyHalf = Array.from(existingIframes).some(iframe => iframe.classList.contains('half'));
-    
-      // Determine the initial state for the new iframe
-      const initialState = isAnyHalf ? 'half' : 'fullscreen';
-    
-      // Create new iframe container
-      const iframeContainer = document.createElement('div');
-      iframeContainer.className = `iframe-container ${initialState}`;
-    
-      // Create header
-      const header = document.createElement('div');
-      header.className = 'header';
-    
-      const titleElem = document.createElement('span');
-      titleElem.className = 'title';
-      titleElem.textContent = title;
-    
-      const controls = document.createElement('div');
-      controls.className = 'controls';
-    
-      // Minimize button
-      const minimizeButton = document.createElement('button');
-      minimizeButton.className = 'control-button minimize';
-      minimizeButton.textContent = '-';
-      minimizeButton.onclick = () => minimizeIframe(iframeContainer, title, iconSrc);
-    
-      // Resize button
-      const resizeButton = document.createElement('button');
-      resizeButton.className = 'control-button';
-      resizeButton.textContent = '↔';
-      resizeButton.onclick = () => resizeIframe(iframeContainer);
-    
-      // Close button
-      const closeButton = document.createElement('button');
-      closeButton.className = 'control-button';
-      closeButton.textContent = 'X';
-      closeButton.onclick = () => iframeContainer.remove();
-    
-      controls.appendChild(minimizeButton);
-      controls.appendChild(resizeButton);
-      controls.appendChild(closeButton);
-    
-      header.appendChild(titleElem);
-      header.appendChild(controls);
-    
-      // Create iframe
-      const iframe = document.createElement('iframe');
-      iframe.src = url;
-      iframe.className = 'fullscreen-iframe';
-    
-      iframeContainer.appendChild(header);
-      iframeContainer.appendChild(iframe);
-      document.body.appendChild(iframeContainer);
-    
-      // Bring newly opened iframe to the top
-      iframeContainer.addEventListener('click', () => {
-        bringToFront(iframeContainer);
-      });
-    
-      // Ensure the new iframe starts in the correct state
-      if (initialState === 'fullscreen') {
-        setTimeout(() => {
-          iframeContainer.style.width = '100%';
-          iframeContainer.style.left = '0';
-          iframeContainer.style.zIndex = '1001'; // Bring it to front
-        }, 0);
-      } else {
-        // Position the new iframe correctly if starting as half
-        setTimeout(() => {
-          iframeContainer.style.width = '50%';
-          iframeContainer.style.left = numIframes % 2 === 0 ? '0' : '50%';
-          iframeContainer.style.zIndex = '1000'; // Normal z-index for half mode
-        }, 0);
-      }
-    }
-    
-    function resizeIframe(iframeContainer) {
-      const isFullscreen = iframeContainer.classList.contains('fullscreen');
-      const numIframes = document.querySelectorAll('.iframe-container').length;
-    
-      if (isFullscreen) {
-        iframeContainer.classList.remove('fullscreen');
-        iframeContainer.classList.add('half');
-        iframeContainer.style.width = '50%';
-        iframeContainer.style.left = numIframes % 2 === 0 ? '0' : '50%';
-        iframeContainer.style.zIndex = '1000'; // Normal z-index for half mode
-      } else {
-        iframeContainer.classList.remove('half');
-        iframeContainer.classList.add('fullscreen');
-        iframeContainer.style.width = '100%';
-        iframeContainer.style.left = '0';
-        iframeContainer.style.zIndex = '1001'; // Bring it to front
-      }
-    }
-    
-    function bringToFront(iframeContainer) {
-      // Move the clicked iframe to the top of the stack
-      iframeContainer.style.zIndex = '1001';
-    }
-    
-    
-
-    function minimizeIframe(iframeContainer, title, iconSrc) {
-      iframeContainer.style.display = 'none';
-      const minimizedIcon = document.createElement('div');
-      minimizedIcon.className = 'minimized-icon';
-      minimizedIcon.innerHTML = `<img src="${iconSrc}" alt="${title}">`;
-
-      minimizedIcon.onclick = () => {
-        iframeContainer.style.display = 'block';
-        minimizedIcon.remove();
-      };
-
-      document.getElementById('minimizedIcons').appendChild(minimizedIcon);
-    }
-
-    function toggleFullscreen(iframe) {
-      if (!document.fullscreenElement) {
-        iframe.requestFullscreen().catch((err) => {
-          alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
-        });
-      } else {
-        document.exitFullscreen();
-      }
-    }
-
-    document.getElementById('changeBackground').onclick = function () {
-      openWallpaperModal();
-    };
-
-    const wallpapers = [
-      'wall1.jpg',
-      'wall2.jpg',
-      'wall3.jpg',
-      'wall4.jpg',
-      'wall5.jpg',
-      'wall6.jpg',
-      'wall7.jpg',
-      'wall8.jpg',
-      'wall9.jpg',
-      'wallco.jpg'
-    ];
-
-    const wallpaperGrid = document.getElementById('wallpaperGrid');
-    wallpapers.forEach((wallpaper) => {
-      const img = document.createElement('img');
-      img.src = wallpaper;
-      img.onclick = () => selectWallpaper(img);
-      wallpaperGrid.appendChild(img);
-    });
-
-    function openWallpaperModal() {
-      wallpaperModal.style.display = 'block';
-    }
-
-    function closeWallpaperModal() {
-      wallpaperModal.style.display = 'none';
-    }
-
-    function selectWallpaper(img) {
-      if (selectedWallpaper) {
-        selectedWallpaper.style.border = 'none';
-      }
-      selectedWallpaper = img;
-      img.style.border = '2px solid #4caf50';
-      // Call function to set text color based on background image
-      setTextColorFromBackground();
-    }
-
-    function setTextColorFromBackground() {
-      const backgroundImageUrl = `url(${selectedWallpaper.src})`;
-      const tempImg = new Image();
-      tempImg.src = selectedWallpaper.src;
-      tempImg.onload = function() {
-        const averageColor = getAverageColor(tempImg);
-        const isDark = isDarkColor(averageColor);
-        document.body.style.color = isDark ? 'white' : 'black';
-      };
-    }
-
-    function getAverageColor(img) {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0);
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-
-      let sumR = 0, sumG = 0, sumB = 0;
-      for (let i = 0; i < imageData.length; i += 4) {
-        sumR += imageData[i];
-        sumG += imageData[i + 1];
-        sumB += imageData[i + 2];
-      }
-
-      const pixelCount = imageData.length / 4;
-      const avgR = Math.floor(sumR / pixelCount);
-      const avgG = Math.floor(sumG / pixelCount);
-      const avgB = Math.floor(sumB / pixelCount);
-
-      return `rgb(${avgR}, ${avgG}, ${avgB})`;
-    }
-
-    function isDarkColor(color) {
-      const rgb = color.match(/\d+/g);
-      // HSP (Highly Sensitive Poo) equation from http://alienryderflex.com/hsp.html
-      const brightness = Math.sqrt(0.299 * (rgb[0] * rgb[0]) + 0.587 * (rgb[1] * rgb[1]) + 0.114 * (rgb[2] * rgb[2]));
-      return brightness < 127.5;
-    }
-
-    function applyWallpaper() {
-      if (selectedWallpaper) {
-        document.body.style.backgroundImage = `url(${selectedWallpaper.src})`;
-        setTextColorFromBackground();
-        closeWallpaperModal();
-      }
-    }
-
-    //for welcome modal to show once
-    function showWelcomeModal() {
-      const welcomeModal = document.getElementById('welcomeModal');
-      welcomeModal.style.display = 'block';
-    
-      // Set the flag in localStorage
-      localStorage.setItem('welcomeShown', 'true');
-    }
-
-
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const welcomeShown = localStorage.getItem('welcomeShown');
-    
-      if (!welcomeShown) {
-        showWelcomeModal();
-      } else {
-        // Request fullscreen mode
-        if (document.documentElement.requestFullscreen) {
-          document.documentElement.requestFullscreen();
-        } else if (document.documentElement.mozRequestFullScreen) { // Firefox
-          document.documentElement.mozRequestFullScreen();
-        } else if (document.documentElement.webkitRequestFullscreen) { // Chrome, Safari and Opera
-          document.documentElement.webkitRequestFullscreen();
-        } else if (document.documentElement.msRequestFullscreen) { // IE/Edge
-          document.documentElement.msRequestFullscreen();
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fire Auth</title>
+    <style>
+        body {
+            background-color: #e4e4f7;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
         }
-      }
-    
-      // Load the saved wallpaper from localStorage
-      const savedWallpaper = localStorage.getItem('wallpaper');
-      if (savedWallpaper) {
-        document.body.style.backgroundImage = `url(${savedWallpaper})`;
-        setTextColorFromBackground(savedWallpaper);
-      }
-    
-      // Move icons to center of taskbar
-      const minimizedIconsContainer = document.getElementById('minimizedIcons');
-      const taskbar = document.querySelector('.taskbar');
-      taskbar.insertBefore(minimizedIconsContainer, taskbar.firstChild);
-    
-      // Update to tile icons horizontally without names
-      const minimizedIcons = document.querySelectorAll('.minimized-icon');
-      minimizedIcons.forEach(icon => {
-        icon.querySelector('span')?.remove(); // Remove the name below the icons if present
-      });
-    });
-    
-    
+        .container {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        .container h1 {
+            color: #555;
+        }
+        .loader {
+            border: 8px solid #f3f3f3; /* Light grey */
+            border-top: 8px solid #606af8; /* Blue */
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 2s linear infinite;
+            margin: 20px auto;
+        }
+        .checkmark {
+            display: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            stroke-width: 2;
+            stroke: #606af8;
+            stroke-miterlimit: 10;
+            margin: 20px auto;
+            box-shadow: inset 0px 0px 0px #606af8;
+            animation: fill 0.4s ease-in-out 0.4s forwards, scale 0.3s ease-in-out 0.9s both;
+        }
+        .checkmark__circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 2;
+            stroke-miterlimit: 10;
+            stroke: #606af8;
+            fill: none;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+        .checkmark__check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.7s forwards;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes stroke {
+            100% { stroke-dashoffset: 0; }
+        }
+        @keyframes scale {
+            0%, 100% { transform: none; }
+            50% { transform: scale3d(1.1, 1.1, 1); }
+        }
+        @keyframes fill {
+            100% { box-shadow: inherit 0px 0px 0px 30px #606af8; }
+        }
+    </style>
+</head>
+<body onload="startVerification()">
+    <div class="container">
+        <h1 id="status">Verifying you are human...</h1>
+        <p id="loading-text">This may take a few seconds...</p>
+        <!-- Loader -->
+        <div class="loader" id="loader"></div>
+        <!-- Checkmark -->
+        <svg class="checkmark" id="checkmark" viewBox="0 0 52 52">
+            <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"></circle>
+            <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"></path>
+        </svg>
+        <!-- Insert Cloudflare verification code here -->
+        <div id="verification-widget">
+            <!-- Cloudflare Widget -->
+        </div>
+    </div>
+    <script>
+        function startVerification() {
+            // Initial verification
+            setTimeout(function() {
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('checkmark').style.display = 'block';
+                document.getElementById('status').innerText = 'Successfully verified!';
+                document.getElementById('loading-text').style.display = 'none';
+                redirectAfterInterval();
+            }, 5000); // Change this interval to match your verification time
+        }
 
-
-    function applyWallpaper() {
-      if (selectedWallpaper) {
-        const wallpaperUrl = selectedWallpaper.src;
-        document.body.style.backgroundImage = `url(${wallpaperUrl})`;
-        setTextColorFromBackground(wallpaperUrl);
-    
-        // Save the selected wallpaper to localStorage
-        localStorage.setItem('wallpaper', wallpaperUrl);
-    
-        closeWallpaperModal();
-      }
-    }
-    
-
-
-    document.addEventListener('DOMContentLoaded', () => {
-      // Load the saved wallpaper from localStorage
-      const savedWallpaper = localStorage.getItem('wallpaper');
-      if (savedWallpaper) {
-        document.body.style.backgroundImage = `url(${savedWallpaper})`;
-        setTextColorFromBackground(savedWallpaper);
-      }
-    });
-
-    // Move icons to center of taskbar
-    document.addEventListener('DOMContentLoaded', () => {
-      const minimizedIconsContainer = document.getElementById('minimizedIcons');
-      const taskbar = document.querySelector('.taskbar');
-      taskbar.insertBefore(minimizedIconsContainer, taskbar.firstChild);
-
-      // Update to tile icons horizontally without names
-      const minimizedIcons = document.querySelectorAll('.minimized-icon');
-      minimizedIcons.forEach(icon => {
-        icon.querySelector('span')?.remove(); // Remove the name below the icons if present
-      });
-    });
-
-    // Context Menu Button Handlers
-    document.getElementById('reload').onclick = function () {
-      location.reload();
-    };
-
-    document.getElementById('share').onclick = function () {
-      const shareData = {
-        title: 'FireFly India',
-        text: 'Check out this cool desktop interface!',
-        url: window.location.href
-      };
-
-      if (navigator.share) {
-        navigator.share(shareData)
-          .then(() => console.log('Share successful'))
-          .catch((error) => console.log('Sharing failed', error));
-      } else {
-        alert('Web Share API not supported in your browser.');
-      }
-    };
-
-    document.getElementById('terminal').onclick = function () {
-      openSite('https://your-terminal-url.com', 'Terminal', 'terminal.png');
-    };  
-
-
-
-
-
-
-    //starting pop-up..................................................
-    let isFullscreen = false;
-
-    function closeWelcomeModal() {
-      const modal = document.getElementById('welcomeModal');
-      if (modal) {
-        modal.style.display = 'none';
-        openFullscreen();
-      }
-    }
-
-    function openFullscreen() {
-      const elem = document.documentElement;
-      if (elem.requestFullscreen) {
-        elem.requestFullscreen().catch(err => console.error("Fullscreen request failed:", err));
-      } else if (elem.mozRequestFullScreen) {
-        elem.mozRequestFullScreen();
-      } else if (elem.webkitRequestFullscreen) {
-        elem.webkitRequestFullscreen();
-      } else if (elem.msRequestFullscreen) {
-        elem.msRequestFullscreen();
-      }
-      isFullscreen = true;
-    }
-
-    function exitFullscreen() {
-      if (document.exitFullscreen) {
-        document.exitFullscreen().catch(err => console.error("Exit fullscreen failed:", err));
-      } else if (document.mozCancelFullScreen) {
-        document.mozCancelFullScreen();
-      } else if (document.webkitExitFullscreen) {
-        document.webkitExitFullscreen();
-      } else if (document.msExitFullscreen) {
-        document.msExitFullscreen();
-      }
-      isFullscreen = false;
-    }
-
-    function checkFullscreenStatus() {
-      if (!document.fullscreenElement) {
-        isFullscreen = false;
-      }
-    }
-
-    document.addEventListener('fullscreenchange', checkFullscreenStatus);
-
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && isFullscreen) {
-        exitFullscreen();
-      }
-    });
-
-    window.onload = function() {
-      console.log("Window loaded");
-      const modal = document.getElementById('welcomeModal');
-      if (modal) {
-        modal.style.display = 'block';
-      }
-    };
-
-
-
-
-
-
-    // Function to check internet connectivity
-    function checkInternetConnection() {
-      if (navigator.onLine) {
-        document.getElementById('noInternetModal').style.display = 'none';
-      } else {
-        document.getElementById('noInternetModal').style.display = 'block';
-      }
-    }
-
-    // Set interval to check the internet connection every second
-    setInterval(checkInternetConnection, 1000);
-
-    function closeNoInternetModal() {
-      document.getElementById('noInternetModal').style.display = 'none';
-    }
-
-
-
-
-
-  //  =======================================================mobile prohibit==========================================
-
-// Detect if the user is accessing from a mobile device
-function isMobile() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-}
-
-// Redirect if the user is accessing from a mobile device
-function redirectIfMobile() {
-    if (isMobile()) {
-        // Redirect to a different page
-        window.location.href = "unsupport.html";
-    }
-}
-
-// Call the function to check and redirect on page load
-window.onload = redirectIfMobile;
-
-
-if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-    window.location.href = "unsupport.html";
-}
-
-
-    
-  </script>
+        // Function to redirect after a certain time interval
+        function redirectAfterInterval() {
+            var interval = 2000; // 2000 milliseconds = 2 seconds
+            var url = "#"; // Replace with your desired URL
+            setTimeout(function() {
+                history.replaceState(null, null, url); // Replace the current history entry
+                window.location.href = url(odesktop.html);
+            }, interval);
+        }
+    </script>
 </body>
 </html>
